@@ -1,24 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.10</version>
+        <relativePath />
+    </parent>
     <developers>
         <developer>
             <id>Bogdan Vazzolla</id>
             <name>Bogdan Vazzolla</name>
         </developer>
     </developers>
-    <parent>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plugin</artifactId>
-        <version>2.3</version>
-    </parent>
     <properties>
-        <jenkins.version>2.19.4</jenkins.version>
+        <java.level>8</java.level>
+        <jenkins.version>2.164.3</jenkins.version>
         <hpi-plugin.version>1.106</hpi-plugin.version>
     </properties>
 
     <groupId>com.loadfocus</groupId>
-    <artifactId>jmeter-load-test-loadfocus</artifactId>
+    <artifactId>loadfocus-jmeter-load-testing-integration</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
@@ -28,7 +30,7 @@
     </organization>
 
     <name>JMeter Load Testing in the Cloud for CI/CD by LoadFocus</name>
-    <url>https://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin</url>
+    <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
     <description>JMeter Load Testing in the Cloud for CI/CD is a Jenkins plugin for running Apache JMeter load tests and performance tests in the cloud, continuously for Websites and APIs provided by LoadFocus.
     </description>
 
@@ -59,24 +61,18 @@
             <version>2.3.1</version>
         </dependency>
     </dependencies>
-    <licenses>
-        <license>
-            <name>MIT license</name>
-            <comments>All source code is under the MIT license.</comments>
-        </license>
-    </licenses>
 
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -94,19 +90,58 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin</url>
-      <tag>jmeter-load-test-loadfocus-1.1.1</tag>
-  </scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
+        <tag>jmeter-load-test-loadfocus-1.1.1</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <properties>
+                <javadoc.flag>none</javadoc.flag>
+            </properties>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>1.8.0</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <source>11</source>
+                    <source>8</source>
                     <additionalparam>-Xdoclint:none</additionalparam>
                     <detectJavaApiLink>false</detectJavaApiLink>
                 </configuration>
