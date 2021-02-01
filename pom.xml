@@ -1,0 +1,147 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <developers>
+        <developer>
+            <id>Bogdan Vazzolla</id>
+            <name>Bogdan Vazzolla</name>
+        </developer>
+    </developers>
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>2.3</version>
+    </parent>
+    <properties>
+        <jenkins.version>2.19.4</jenkins.version>
+        <hpi-plugin.version>1.106</hpi-plugin.version>
+    </properties>
+
+    <groupId>com.loadfocus</groupId>
+    <artifactId>jmeter-load-test-loadfocus</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+
+    <organization>
+        <name>LoadFocus.com</name>
+        <url>https://loadfocus.com</url>
+    </organization>
+
+    <name>JMeter Load Testing in the Cloud for CI/CD by LoadFocus</name>
+    <url>https://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin</url>
+    <description>JMeter Load Testing in the Cloud for CI/CD is a Jenkins plugin for running Apache JMeter load tests and performance tests in the cloud, continuously for Websites and APIs provided by LoadFocus.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+            <version>4.4.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>2.1.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+    </dependencies>
+    <licenses>
+        <license>
+            <name>MIT license</name>
+            <comments>All source code is under the MIT license.</comments>
+        </license>
+    </licenses>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>maven.jenkins-ci.org</id>
+            <name>jenkinsci-releases</name>
+            <url>https://repo.jenkins-ci.org/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>maven.jenkins-ci.org</id>
+            <name>jenkinsci-snapshots</name>
+            <url>https://repo.jenkins-ci.org/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/jmeter-load-test-ci-cd-jenkins-plugin</url>
+      <tag>jmeter-load-test-loadfocus-1.1.1</tag>
+  </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <detectJavaApiLink>false</detectJavaApiLink>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.4</version>
+                <configuration>
+                    <failOnError>${maven.findbugs.failure.strict}</failOnError>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <!-- Disable the default-test by putting it in phase none -->
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <!-- Enable the test during integration-test phase -->
+                        <id>surefire-it</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
