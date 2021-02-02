@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -7,22 +8,6 @@
         <version>4.10</version>
         <relativePath />
     </parent>
-    <developers>
-        <developer>
-            <id>Bogdan Vazzolla</id>
-            <name>Bogdan Vazzolla</name>
-        </developer>
-    </developers>
-    <properties>
-        <java.level>8</java.level>
-        <jenkins.version>2.164.3</jenkins.version>
-        <hpi-plugin.version>1.106</hpi-plugin.version>
-    </properties>
-
-    <groupId>com.loadfocus</groupId>
-    <artifactId>loadfocus-jmeter-load-testing-integration</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>hpi</packaging>
 
     <organization>
         <name>LoadFocus.com</name>
@@ -31,8 +16,26 @@
 
     <name>JMeter Load Testing in the Cloud for CI/CD by LoadFocus</name>
     <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
-    <description>JMeter Load Testing in the Cloud for CI/CD is a Jenkins plugin for running Apache JMeter load tests and performance tests in the cloud, continuously for Websites and APIs provided by LoadFocus.
-    </description>
+    <description>JMeter Load Testing in the Cloud for CI/CD is a Jenkins plugin for running Apache JMeter load tests and performance tests in the cloud, continuously for Websites and APIs provided by LoadFocus.</description>
+
+
+    <developers>
+        <developer>
+            <id>Bogdan Vazzolla</id>
+            <name>Bogdan Vazzolla</name>
+        </developer>
+    </developers>
+
+    <properties>
+        <java.level>8</java.level>
+        <jenkins.version>2.249.3</jenkins.version>
+        <hpi-plugin.version>2.1</hpi-plugin.version>
+    </properties>
+
+    <groupId>com.loadfocus</groupId>
+    <artifactId>loadfocus-jmeter-load-testing-integration</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
 
     <dependencies>
         <dependency>
@@ -53,7 +56,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
-            <version>2.1.16</version>
+            <version>2.3.13</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -62,13 +65,70 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <properties>
+                <javadoc.flag>none</javadoc.flag>
+            </properties>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <doclint>${javadoc.flag}</doclint>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>surefire-it</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
+        <tag>jmeter-load-test-loadfocus-1.1.1</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
-
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
@@ -88,95 +148,5 @@
             <url>https://repo.jenkins-ci.org/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-
-    <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
-        <tag>jmeter-load-test-loadfocus-1.1.1</tag>
-    </scm>
-
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
-        </license>
-    </licenses>
-
-    <profiles>
-        <profile>
-            <id>jdk8</id>
-            <properties>
-                <javadoc.flag>none</javadoc.flag>
-            </properties>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-        </profile>
-    </profiles>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <executions>
-                    <execution>
-                        <id>enforce-java</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                    <version>1.8.0</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <detectJavaApiLink>false</detectJavaApiLink>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.4</version>
-                <configuration>
-                    <failOnError>${maven.findbugs.failure.strict}</failOnError>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <!-- Disable the default-test by putting it in phase none -->
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <!-- Enable the test during integration-test phase -->
-                        <id>surefire-it</id>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
