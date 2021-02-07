@@ -1,6 +1,7 @@
 package com.loadfocus.jenkins;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.loadfocus.jenkins.api.LoadAPI;
 import hudson.Extension;
 import hudson.Launcher;
@@ -18,10 +19,8 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -30,7 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class LoadPublisher extends Notifier {
-	private String apiKey;
+	private Secret apiKey;
 	private String testId = "";
 	private String testName = "";
     private int errorFailedThreshold = 0;
@@ -41,7 +40,7 @@ public class LoadPublisher extends Notifier {
     static final String baseApiUri = "https://loadfocus.com/";
 
 	@DataBoundConstructor
-    public LoadPublisher(String apiKey,
+    public LoadPublisher(Secret apiKey,
                          String testId,
                          int errorFailedThreshold,
                          int errorUnstableThreshold,
@@ -66,12 +65,12 @@ public class LoadPublisher extends Notifier {
         if ((result = validateParameters(logger)) != Result.SUCCESS) {
             return true;
         }
-        String apiKeyId = StringUtils.defaultIfEmpty(getApiKey(), getDescriptor().getApiKey());
-        String apiKey = null;
+        Secret apiKeyId = Secret.fromString(StringUtils.defaultIfEmpty(getApiKey(), getDescriptor().getApiKey()));
+        Secret apiKey = null;
         for (LoadCredential c : CredentialsProvider
                 .lookupCredentials(LoadCredential.class, build.getProject(), ACL.SYSTEM)) {
-            if (StringUtils.equals(apiKeyId, c.getId())) {
-                apiKey = c.getApiKey().getPlainText();
+            if (StringUtils.equals(apiKeyId.getPlainText(), c.getApiKey())) {
+                apiKey = Secret.fromString(c.getApiKey());
                 break;
             }
         }
@@ -165,7 +164,7 @@ public class LoadPublisher extends Notifier {
 
         Thread.sleep(3 * 1000);
 
-        JSONArray labelsArray = loadApi.getLabels(testrunname, testrunid, apiKey);
+        JSONArray labelsArray = loadApi.getLabels(testrunname, testrunid, apiKey.getPlainText());
 
         int countErrorFail = 0;
         int countErrorUnstable = 0;
@@ -175,7 +174,7 @@ public class LoadPublisher extends Notifier {
         for (int i = 0; i < labelsArray.size(); i++) {
             Map<String, Integer> countResponses;
             String label = labelsArray.getJSONObject(i).get("label").toString();
-            countResponses = checkResultForLabels(loadApi, testrunname, testrunid, state, label, apiKey);
+            countResponses = checkResultForLabels(loadApi, testrunname, testrunid, state, label, apiKey.getPlainText());
 
             countErrorFail = countErrorFail + countResponses.get("countErrorFail");
             countErrorUnstable = countErrorUnstable + countResponses.get("countErrorUnstable");
@@ -300,7 +299,10 @@ public class LoadPublisher extends Notifier {
 	}
 
 	public String getApiKey() {
-        return apiKey;
+	    if(apiKey == null) {
+	        return "";
+        }
+        return apiKey.getPlainText();
     }
 
 	public int getResponseTimeFailedThreshold() {
@@ -360,12 +362,8 @@ public class LoadPublisher extends Notifier {
     @Extension
     public static final LoadPerformancePublisherDescriptor DESCRIPTOR = new LoadPerformancePublisherDescriptor();
 
-	public static final class DescriptorImpl
-    	extends LoadPerformancePublisherDescriptor {
-	}
-
-	public static class LoadPerformancePublisherDescriptor extends BuildStepDescriptor<Publisher> {
-		private String apiKey;
+    public static class LoadPerformancePublisherDescriptor extends BuildStepDescriptor<Publisher> {
+		private Secret apiKey;
 
         public LoadPerformancePublisherDescriptor() {
             super(LoadPublisher.class);
@@ -373,6 +371,9 @@ public class LoadPublisher extends Notifier {
         }
 
         public FormValidation doCheckErrorUnstableThreshold(@QueryParameter String value) throws IOException, ServletException {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
             try {
                 int errorPercentageUnstable = Integer.parseInt(value);
                 if (Util.fixEmptyAndTrim(value) == null) {
@@ -389,6 +390,9 @@ public class LoadPublisher extends Notifier {
         }
 
         public FormValidation doCheckErrorFailedThreshold(@QueryParameter String value) throws IOException, ServletException {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
             try {
                 int errorPercentageUnstable = Integer.parseInt(value);
                 if (Util.fixEmptyAndTrim(value) == null) {
@@ -405,6 +409,9 @@ public class LoadPublisher extends Notifier {
         }
 
         public FormValidation doCheckResponseTimeUnstableThreshold(@QueryParameter String value) throws IOException, ServletException {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
             try {
                 if (Util.fixEmptyAndTrim(value) == null) {
                     return FormValidation.error("Value cannot be empty");
@@ -417,6 +424,10 @@ public class LoadPublisher extends Notifier {
         }
 
         public FormValidation doCheckResponseTimeFailedThreshold(@QueryParameter String value) throws IOException, ServletException {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
+
             try {
                 if (Util.fixEmptyAndTrim(value) == null) {
                     return FormValidation.error("Value cannot be empty");
@@ -428,8 +439,12 @@ public class LoadPublisher extends Notifier {
             }
         }
 
-     // Used by config.jelly to display the test list.
+        @POST
         public ListBoxModel doFillTestIdItems(@QueryParameter String apiKey) throws FormValidation {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return null;
+            }
+
             if (StringUtils.isBlank(apiKey)) {
                 apiKey = getApiKey();
             }
@@ -438,8 +453,8 @@ public class LoadPublisher extends Notifier {
             Item item = Stapler.getCurrentRequest().findAncestorObject(Item.class);
             for (LoadCredential c : CredentialsProvider
                     .lookupCredentials(LoadCredential.class, item, ACL.SYSTEM)) {
-                if (StringUtils.equals(apiKey, c.getId())) {
-                	apiKeyValue = c.getApiKey();
+                if (StringUtils.equals(apiKey, c.getApiKey())) {
+                	apiKeyValue = Secret.fromString(c.getApiKey());
                     break;
                 }
             }
@@ -447,7 +462,7 @@ public class LoadPublisher extends Notifier {
             if (apiKeyValue == null) {
                 items.add("No API Key", "-1");
             } else {
-	            LoadAPI lda = new LoadAPI(apiKeyValue.getPlainText());
+	            LoadAPI lda = new LoadAPI(apiKeyValue);
 
 	            try {
 	                List<Map<String, String>> testList = lda.getTestList();
@@ -467,9 +482,38 @@ public class LoadPublisher extends Notifier {
             return items;
         }
 
-        public ListBoxModel doFillApiKeyItems() {
+        public FormValidation doCheckApiKey(
+                @AncestorInPath Item item,
+                @QueryParameter String value
+        ) {
+            if (item == null) {
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                    return FormValidation.ok();
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ)
+                        && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return FormValidation.ok();
+                }
+            }
+            if (StringUtils.isBlank(value)) {
+                return FormValidation.ok();
+            }
+            if (value.startsWith("${") && value.endsWith("}")) { // (5)
+                return FormValidation.warning("Cannot validate expression based credentials");
+            }
+            return FormValidation.ok();
+        }
+
+        public ListBoxModel doFillApiKeyItems(@QueryParameter String apiKey) {
+            StandardListBoxModel result = new StandardListBoxModel();
+
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return result.includeCurrentValue(apiKey); // (2)
+            }
+
             ListBoxModel items = new ListBoxModel();
-            Set<String> apiKeys = new HashSet<String>();
+            Set<String> apiKeys = new HashSet<>();
 
             Item item = Stapler.getCurrentRequest().findAncestorObject(Item.class);
             if (item instanceof Job) {
@@ -518,7 +562,7 @@ public class LoadPublisher extends Notifier {
 
 		@Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            apiKey = formData.optString("apiKey");
+            apiKey = Secret.fromString(formData.optString("apiKey"));
             save();
             return true;
         }
@@ -526,23 +570,23 @@ public class LoadPublisher extends Notifier {
 		public String getApiKey() {
             List<LoadCredential> credentials = CredentialsProvider
                     .lookupCredentials(LoadCredential.class, Jenkins.getInstance(), ACL.SYSTEM);
-            if (StringUtils.isBlank(apiKey) && !credentials.isEmpty()) {
-                return credentials.get(0).getId();
+            if ((apiKey == null || StringUtils.isBlank(apiKey.getPlainText())) && !credentials.isEmpty()) {
+                return credentials.get(0).getApiKey();
             }
             if (credentials.size() == 1) {
-                return credentials.get(0).getId();
+                return credentials.get(0).getApiKey();
             }
             for (LoadCredential c: credentials) {
-                if (StringUtils.equals(c.getId(), apiKey)) {
-                    return apiKey;
+                if (StringUtils.equals(c.getApiKey(), apiKey.getPlainText())) {
+                    return apiKey.getPlainText();
                 }
             }
             // API key is not valid any more
             return "";
         }
 
-		public void setApiKey(String apiKey) {
-			this.apiKey = apiKey;
+		public void setApiKey(Secret apiKey) {
+            this.apiKey = apiKey;
 	    }
 
 	}

@@ -13,7 +13,6 @@ public abstract  class AbstractCredential extends BaseCredentials implements Loa
     }
 
     public String getId() {
-        final String apiKey = getApiKey().getPlainText();
-        return StringUtils.left(apiKey,4) + "..." + StringUtils.right(apiKey, 6);
+        return StringUtils.left(getApiKey(),4) + "..." + StringUtils.right(getApiKey(), 6);
     }
 }
