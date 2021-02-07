@@ -6,14 +6,14 @@ import com.loadfocus.jenkins.api.LoadAPI;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
+import org.kohsuke.stapler.verb.POST;
 import javax.mail.MessagingException;
 import javax.servlet.ServletException;
 import java.io.IOException;
-
 
 public class LoadCredentialImpl extends AbstractCredential {
 	private static final long serialVersionUID = 1L;
@@ -30,8 +30,8 @@ public class LoadCredentialImpl extends AbstractCredential {
         return description;
     }
 
-    public Secret getApiKey() {
-        return apiKey;
+    public String getApiKey() {
+        return apiKey.getPlainText();
     }
 
     @Extension
@@ -41,15 +41,25 @@ public class LoadCredentialImpl extends AbstractCredential {
             return Messages.LoadCredential_DisplayName();
         }
 
-        public FormValidation doTestConnection(@QueryParameter("apiKey") final String apiKey) throws MessagingException, IOException, JSONException, ServletException {
+        @POST
+        public FormValidation doTestConnection(@QueryParameter("apiKey") final Secret apiKey) throws MessagingException, IOException, JSONException, ServletException {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
+
         	return checkLoadKey(apiKey);
         }
-        
+
+        @POST
         public FormValidation doTestExistingConnection(@QueryParameter("apiKey") final Secret apiKey) throws MessagingException, IOException, JSONException, ServletException {
-            return checkLoadKey(apiKey.getPlainText());
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
+
+            return checkLoadKey(apiKey);
         }
         
-        private FormValidation checkLoadKey(final String apiKey) throws JSONException, IOException, ServletException {
+        private FormValidation checkLoadKey(final Secret apiKey) throws JSONException, IOException, ServletException {
         	LoadAPI ldr = new LoadAPI(apiKey);
             if (ldr.isValidApiKey()) {
                 return FormValidation.okWithMarkup("Valid API Key");

@@ -3,15 +3,16 @@ package com.loadfocus.jenkins;
 import hudson.model.HealthReport;
 import hudson.model.HealthReportingAction;
 import hudson.model.AbstractBuild;
+import hudson.util.Secret;
 
 public class LoadBuildAction implements HealthReportingAction {
 	private final AbstractBuild<?, ?> build;
 	
 	private String testrunid = null;
 	private String testrunname = null;
-	private String apikey = null;
+	private Secret apikey = null;
 
-	public LoadBuildAction(AbstractBuild<?, ?> build, String testrunname, String testrunid, String apikey) {
+	public LoadBuildAction(AbstractBuild<?, ?> build, String testrunname, String testrunid, Secret apikey) {
 		this.build = build;
 		this.testrunname = testrunname;
 		this.testrunid = testrunid;
@@ -55,10 +56,10 @@ public class LoadBuildAction implements HealthReportingAction {
 	}
 
 	public String getApikey() {
-		return apikey;
+		return apikey.getPlainText();
 	}
 
-	public void setApikey(String apikey) {
+	public void setApikey(Secret apikey) {
 		this.apikey = apikey;
 	}
 }

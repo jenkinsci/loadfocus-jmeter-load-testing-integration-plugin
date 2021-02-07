@@ -1,6 +1,7 @@
 package com.loadfocus.jenkins.api;
 
 import com.google.gson.Gson;
+import hudson.util.Secret;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -16,8 +17,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -38,10 +37,10 @@ public class LoadAPI {
     static final String baseApiUri = "https://loadfocus.com/";
 
     PrintStream logger = System.out;
-    String apiKey;
+    Secret apiKey;
 
-    public LoadAPI(String apiKey) {
-        logger.println("apiKey: " + apiKey);
+    public LoadAPI(Secret apiKey) {
+        logger.println("apiKey: " + apiKey.getPlainText());
         this.apiKey = apiKey;
     }
 
@@ -70,7 +69,7 @@ public class LoadAPI {
     }
 
     public boolean isValidApiKey() {
-        if (isEmptyString(apiKey)) {
+        if (isEmptyString(apiKey.getPlainText())) {
             logger.println("getTestApi apiKey is empty");
             return false;
         }
@@ -79,7 +78,7 @@ public class LoadAPI {
             logger.println("invalid ApiKey");
             return false;
         }
-        return isValid;
+        return true;
     }
 
     public boolean validateAPIKey(String path){
@@ -263,7 +262,7 @@ public class LoadAPI {
         GetMethod method = new GetMethod(fullUri.toString());
         method.addRequestHeader("accept", "application/json");
         method.addRequestHeader("content-type", "application/json");
-        method.addRequestHeader("loadfocus-auth", apiKey);
+        method.addRequestHeader("loadfocus-auth", apiKey.getPlainText());
 
         try {
             int statusCode = client.executeMethod(method);
@@ -298,7 +297,7 @@ public class LoadAPI {
 
         PostMethod method = new PostMethod(fullUri.toString());
         method.addRequestHeader("Content-Type", "application/json");
-        method.addRequestHeader("loadfocus-auth", apiKey);
+        method.addRequestHeader("loadfocus-auth", apiKey.getPlainText());
 
         try {
             int statusCode = client.executeMethod(method);
@@ -342,7 +341,7 @@ public class LoadAPI {
 
         HttpPost httpPost = new HttpPost(fullUri.toString());
         httpPost.addHeader("Content-Type", contentType);
-        httpPost.addHeader("loadfocus-auth", apiKey);
+        httpPost.addHeader("loadfocus-auth", apiKey.getPlainText());
         httpPost.setEntity(requestEntity);
 
         try {
