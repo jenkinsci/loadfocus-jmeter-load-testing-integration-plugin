@@ -37,7 +37,7 @@ public class LoadAPI {
     static final String baseApiUri = "https://loadfocus.com/";
 
     PrintStream logger = System.out;
-    Secret apiKey;
+    Secret apiKey = null;
 
     public LoadAPI(Secret apiKey) {
         logger.println("apiKey: " + apiKey.getPlainText());
@@ -224,16 +224,12 @@ public class LoadAPI {
 
         String path = "api/v1/jmetertests/aggregate/results-noform?apikey=" + apikey;
 
-        Long teststarttime = Long.parseLong(state.get("teststarttime").toString());
-        Long teststoptime = Long.parseLong(state.get("teststoptime").toString());
-
         JSONObject jsonObject = new JSONObject();
         jsonObject.accumulate("testrunname", testrunname);
         jsonObject.accumulate("testrunid", testrunid);
         jsonObject.accumulate("teststarttime", state.get("teststarttime").toString());
         jsonObject.accumulate("teststoptime",  state.get("teststoptime").toString());
         jsonObject.accumulate("machinenumber", 1);
-
 
         jsonObject.accumulate("filter[]", label);
         jsonObject.accumulate("sortasc[]", "timestamp");
