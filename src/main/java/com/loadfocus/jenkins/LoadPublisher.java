@@ -67,15 +67,14 @@ public class LoadPublisher extends Notifier {
         }
         Secret apiKeyId = Secret.fromString(StringUtils.defaultIfEmpty(getApiKey(), getDescriptor().getApiKey()));
         Secret apiKey = null;
-        for (LoadCredential c : CredentialsProvider
-                .lookupCredentials(LoadCredential.class, build.getProject(), ACL.SYSTEM)) {
+        for (LoadCredential c : CredentialsProvider.lookupCredentials(LoadCredential.class, build.getProject(), ACL.SYSTEM)) {
             if (StringUtils.equals(apiKeyId.getPlainText(), c.getApiKey())) {
                 apiKey = Secret.fromString(c.getApiKey());
                 break;
             }
         }
         
-        LoadAPI loadApi = new LoadAPI(apiKey);
+        LoadAPI loadApi = new LoadAPI(apiKeyId);
         JSONObject resultObj = loadApi.runTest(getTestId());
 
         if(resultObj != null && resultObj.get("error") != null && resultObj.get("error").toString().equalsIgnoreCase("missing-plan")) {
