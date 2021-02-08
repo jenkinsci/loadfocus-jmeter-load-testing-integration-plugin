@@ -34,7 +34,7 @@
 
     <groupId>com.loadfocus</groupId>
     <artifactId>loadfocus-jmeter-load-testing-integration</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>hpi</packaging>
 
     <dependencies>
