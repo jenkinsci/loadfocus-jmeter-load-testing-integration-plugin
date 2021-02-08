@@ -113,7 +113,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/loadfocus-jmeter-load-test-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/loadfocus-jmeter-load-test-plugin</url>
-        <tag>jmeter-load-test-loadfocus-1.1.1</tag>
+        <tag>loadfocus-jmeter-load-testing-integration-1.0.0</tag>
     </scm>
 
     <licenses>
