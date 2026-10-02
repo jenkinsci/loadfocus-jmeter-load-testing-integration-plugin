@@ -12,6 +12,6 @@ public interface LoadCredential extends Credentials {
 
     String getId();
 
-    String getApiKey();
+    Secret getApiKey();
 
 }

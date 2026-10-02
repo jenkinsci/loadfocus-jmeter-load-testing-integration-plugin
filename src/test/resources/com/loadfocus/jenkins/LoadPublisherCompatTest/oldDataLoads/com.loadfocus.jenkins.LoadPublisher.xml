@@ -1,0 +1,4 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<com.loadfocus.jenkins.LoadPublisher_-LoadPerformancePublisherDescriptor plugin="loadfocus-jmeter-load-testing-integration@1.0.0">
+  <apiKey>lfkey-0123456789abcdef</apiKey>
+</com.loadfocus.jenkins.LoadPublisher_-LoadPerformancePublisherDescriptor>
