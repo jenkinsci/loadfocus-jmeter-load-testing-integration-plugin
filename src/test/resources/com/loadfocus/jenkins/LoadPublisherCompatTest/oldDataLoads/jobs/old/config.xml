@@ -1,0 +1,25 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers>
+    <com.loadfocus.jenkins.LoadPublisher plugin="loadfocus-jmeter-load-testing-integration@1.0.0">
+      <apiKey>lfkey-0123456789abcdef</apiKey>
+      <testId>checkout</testId>
+      <testName></testName>
+      <errorFailedThreshold>5</errorFailedThreshold>
+      <errorUnstableThreshold>0</errorUnstableThreshold>
+      <responseTimeFailedThreshold>1000</responseTimeFailedThreshold>
+      <responseTimeUnstableThreshold>500</responseTimeUnstableThreshold>
+    </com.loadfocus.jenkins.LoadPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

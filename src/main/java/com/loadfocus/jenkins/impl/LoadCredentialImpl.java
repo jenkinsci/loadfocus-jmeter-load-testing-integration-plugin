@@ -6,14 +6,14 @@ import com.loadfocus.jenkins.api.LoadAPI;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import hudson.model.Item;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONException;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
-import javax.mail.MessagingException;
-import javax.servlet.ServletException;
-import java.io.IOException;
+
 
 public class LoadCredentialImpl extends AbstractCredential {
 	private static final long serialVersionUID = 1L;
@@ -30,8 +30,8 @@ public class LoadCredentialImpl extends AbstractCredential {
         return description;
     }
 
-    public String getApiKey() {
-        return apiKey.getPlainText();
+    public Secret getApiKey() {
+        return apiKey;
     }
 
     @Extension
@@ -42,24 +42,22 @@ public class LoadCredentialImpl extends AbstractCredential {
         }
 
         @POST
-        public FormValidation doTestConnection(@QueryParameter("apiKey") final Secret apiKey) throws MessagingException, IOException, JSONException, ServletException {
-            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                return FormValidation.ok();
+        public FormValidation doTestConnection(@AncestorInPath Item context, @QueryParameter("apiKey") final Secret apiKey) {
+            // Folder-scoped credentials are managed from the folder, so check there rather than globally.
+            if (context != null) {
+                context.checkAnyPermission(CredentialsProvider.CREATE, CredentialsProvider.UPDATE);
+            } else {
+                Jenkins.get().checkAnyPermission(CredentialsProvider.CREATE, CredentialsProvider.UPDATE);
             }
-
-        	return checkLoadKey(apiKey);
+            return checkLoadKey(apiKey.getPlainText());
         }
 
         @POST
-        public FormValidation doTestExistingConnection(@QueryParameter("apiKey") final Secret apiKey) throws MessagingException, IOException, JSONException, ServletException {
-            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                return FormValidation.ok();
-            }
-
-            return checkLoadKey(apiKey);
+        public FormValidation doTestExistingConnection(@AncestorInPath Item context, @QueryParameter("apiKey") final Secret apiKey) {
+            return doTestConnection(context, apiKey);
         }
-        
-        private FormValidation checkLoadKey(final Secret apiKey) throws JSONException, IOException, ServletException {
+
+        private FormValidation checkLoadKey(final String apiKey) {
         	LoadAPI ldr = new LoadAPI(apiKey);
             if (ldr.isValidApiKey()) {
                 return FormValidation.okWithMarkup("Valid API Key");
